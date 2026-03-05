@@ -3,11 +3,14 @@ import logging
 import os
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from aiogram.types import FSInputFile, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, URLInputFile
 
-# ТВОИ ДАННЫЕ
+# --- НАСТРОЙКИ ---
 TOKEN = os.getenv('BOT_TOKEN')
-ADMIN_ID = 7749663865  # ID очищен от лишних знаков
+ADMIN_ID = 7749663865  # Твой ID
+
+# ССЫЛКА НА ТВОЙ ЕДИНЫЙ БАННЕР (Замени на свою ссылку из Imgur или TG)
+BANNER_URL = "https://i.postimg.cc/Dw6v2H1B/banner.png"
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
@@ -17,13 +20,13 @@ dp = Dispatcher()
 
 def get_main_menu():
     buttons = [
-        [InlineKeyboardButton(text="⚔️ 𝕂𝕀𝕃𝕃𝔸𝕌ℝ𝔸 (100 ₽ / ⭐)", callback_data="view_killaura")], # ДОБАВЛЕНО
-        [InlineKeyboardButton(text="🔥 ℍ𝕀𝕋𝔹𝕆𝕏𝔼𝕊 (40 ₽ / ⭐)", callback_data="view_hits")],
-        [InlineKeyboardButton(text="🎯 𝕋ℝ𝕀𝔾𝔾𝔼ℝ𝕊 (100 ₽ / ⭐)", callback_data="view_triggers")],
-        [InlineKeyboardButton(text="👁️ 𝕋𝔸ℝ𝔾𝔼𝕋 𝔼𝕊ℙ (30 ₽ / ⭐)", callback_data="view_esp")],
-        [InlineKeyboardButton(text="🕹️ 𝔸𝕀𝕄 𝔸𝕊𝕊𝕀𝕊𝕋 (50 ₽ / ⭐)", callback_data="view_aim")],
-        [InlineKeyboardButton(text="🛠 ℂ𝕌𝕊𝕋𝕆𝕄 𝕄𝕆𝔻 (250 ₽ / ⭐)", callback_data="view_custom")],
-        [InlineKeyboardButton(text="🆘 𝕊𝕌ℙℙ𝕆ℝ𝕋", callback_data="view_support")]
+        [InlineKeyboardButton(text="⚔️ ᴋɪʟʟᴀᴜʀᴀ (100 ₽ / ⭐)", callback_data="view_killaura")],
+        [InlineKeyboardButton(text="🔥 ʜɪᴛʙᴏxᴇꜱ (40 ₽ / ⭐)", callback_data="view_hits")],
+        [InlineKeyboardButton(text="🎯 ᴛʀɪɢɢᴇʀʙᴏᴛ (100 ₽ / ⭐)", callback_data="view_triggers")],
+        [InlineKeyboardButton(text="👁️ ᴛᴀʀɢᴇᴛ ᴇꜱᴘ (30 ₽ / ⭐)", callback_data="view_esp")],
+        [InlineKeyboardButton(text="🕹️ ᴀɪᴍ ᴀꜱꜱɪꜱᴛ (50 ₽ / ⭐)", callback_data="view_aim")],
+        [InlineKeyboardButton(text="🛠 ᴄᴜꜱᴛᴏᴍ ᴍᴏᴅ (250 ₽ / ⭐)", callback_data="view_custom")],
+        [InlineKeyboardButton(text="🆘 ꜱᴜᴘᴘᴏʀᴛ", callback_data="view_support")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -41,13 +44,20 @@ def get_payment_menu(item_name):
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer(
-        "✨ 𝖂𝖊𝖑𝖈𝖔𝖒𝖊 𝖙𝖔 **𝕮𝖍𝖊𝖆𝖙𝕮𝖑𝖎𝖊𝖓𝖙𝖘** ✨\n\n"
-        "Выберите товар из списка ниже.\n"
-        "🆘 Поддержка: /support",
-        reply_markup=get_main_menu(),
-        parse_mode="Markdown"
+    welcome_text = (
+        "✨ <b>ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴡᴇᴀᴢᴢᴇʀᴄʟɪᴇɴᴛ</b> ✨\n\n"
+        "Выберите товар из списка ниже.\n\n"
+        "🆘 Поддержка: @wezroxss"
     )
+    try:
+        await message.answer_photo(
+            photo=BANNER_URL,
+            caption=welcome_text,
+            reply_markup=get_main_menu(),
+            parse_mode="HTML"
+        )
+    except:
+        await message.answer(welcome_text, reply_markup=get_main_menu(), parse_mode="HTML")
 
 @dp.callback_query(F.data == "to_main")
 async def process_to_main(callback: types.CallbackQuery):
@@ -57,40 +67,43 @@ async def process_to_main(callback: types.CallbackQuery):
         pass
     await cmd_start(callback.message)
 
-# Обновленный фильтр (добавлена killaura)
-@dp.callback_query(F.data.in_(["view_killaura", "view_hits", "view_triggers", "view_esp", "view_aim", "view_custom"]))
+@dp.callback_query(F.data.startswith("view_"))
 async def view_item(callback: types.CallbackQuery):
     data = callback.data
-    if data == "view_killaura":
-        item, price, desc = "Киллаура", "100 ₽ или 100 ⭐", "Мощная KillAura с обходом античитов."
-    elif data == "view_hits":
-        item, price, desc = "ХИТБОКСЫ", "40 ₽ или 40 ⭐", "Лучшие настраиваемые хитбоксы."
-    elif data == "view_triggers":
-        item, price, desc = "ТРИГГЕРЫ", "100 ₽ или 100 ⭐", "Легитный триггер 1.20.1 Fabric."
-    elif data == "view_esp":
-        item, price, desc = "TARGET ESP", "30 ₽ или 30 ⭐", "Визуальное отображение целей."
-    elif data == "view_aim":
-        item, price, desc = "AIM ASSIST", "50 ₽ или 50 ⭐", "Плавная доводка прицела до цели."
-    else:
-        item, price, desc = "МОД ПОД ЗАКАЗ", "250 ₽ или 250 ⭐", "Разработка мода по вашему описанию."
+    
+    # Словарь товаров
+    content = {
+        "view_killaura": ("Киллаура", "100 ₽ / 100 ⭐", "Лучшая Killaura среди читов."),
+        "view_hits": ("ХИТБОКСЫ", "40 ₽ / 40 ⭐", "Лучшие хитбоксы, а главное легитные."),
+        "view_triggers": ("ТРИГГЕРЫ", "100 ₽ / 100 ⭐", "Легитный триггер 1.20.1 Fabric."),
+        "view_esp": ("TARGET ESP", "30 ₽ / 30 ⭐", "Визуальное отображение целей."),
+        "view_aim": ("AIM ASSIST", "50 ₽ / 50 ⭐", "Плавная доводка прицела до цели."),
+        "view_custom": ("МОД ПОД ЗАКАЗ", "250 ₽ / 250 ⭐", "Разработка мода по вашему описанию."),
+        "view_support": ("ПОДДЕРЖКА", "-", "Пишите по всем вопросам: @wezroxss")
+    }
+
+    if data not in content: return
+    item, price, desc = content[data]
 
     instruction = (
-        f"🎁 **Вы выбрали: {item}**\n"
+        f"🎁 <b>Вы выбрали: {item}</b>\n"
         f"📝 {desc}\n\n"
-        f"💵 Цена: {price}\n"
-        "--- \n"
-        "💳 **Как оплатить:**\n"
-        "Для оплаты напишите напрямую администратору:\n"
-        "👉 @wezroxss\n\n"
-        "⚠️ **После оплаты нажмите кнопку «Я ОПЛАТИЛ»**"
+        f"💵 <b>Цена: {price}</b>\n\n"
+        f"💳 <b>Как оплатить:</b>\n"
+        f"Напишите администратору: @wezroxss\n\n"
+        f"⚠️ <b>После оплаты нажмите кнопку ниже</b>"
     )
 
     await callback.message.delete()
     try:
-        photo = FSInputFile("item.jpg")
-        await callback.message.answer_photo(photo, caption=instruction, reply_markup=get_payment_menu(item), parse_mode="Markdown")
+        await callback.message.answer_photo(
+            photo=BANNER_URL,
+            caption=instruction,
+            reply_markup=get_payment_menu(item),
+            parse_mode="HTML"
+        )
     except:
-        await callback.message.answer(instruction, reply_markup=get_payment_menu(item), parse_mode="Markdown")
+        await callback.message.answer(instruction, reply_markup=get_payment_menu(item), parse_mode="HTML")
 
 # --- ПОДТВЕРЖДЕНИЕ И ВЫДАЧА ---
 
@@ -102,40 +115,40 @@ async def confirm_payment(callback: types.CallbackQuery):
 
     await bot.send_message(
         ADMIN_ID,
-        f"🔔 **НОВЫЙ ЗАКАЗ!**\n\n"
-        f"👤 Юзер: @{user.username} (ID: `{user.id}`)\n"
+        f"🔔 <b>НОВЫЙ ЗАКАЗ!</b>\n\n"
+        f"👤 Юзер: @{user.username} (ID: <code>{user.id}</code>)\n"
         f"📦 Товар: {item_name}\n"
-        f"--- \n"
-        f"Команды выдачи:\n"
-        f"Киллаура: `/give_killaura {user.id}`\n"
-        f"Хиты: `/give_hits {user.id}`\n"
-        f"Триггеры: `/give_triggers {user.id}`"
+        f"━━━━━━━━━━━━\n"
+        f"Команда выдачи:\n"
+        f"<code>/give {user.id} {item_name}</code>",
+        parse_mode="HTML"
     )
 
-# --- КОМАНДЫ ВЫДАЧИ (Админские) ---
-
-@dp.message(Command("give_killaura"))
-async def give_killaura(message: types.Message):
+@dp.message(Command("give"))
+async def cmd_give(message: types.Message):
     if message.from_user.id != ADMIN_ID: return
     try:
-        uid = int(message.text.split()[1])
-        # Убедись, что файл killaura.rar лежит в папке с ботом
-        await bot.send_document(uid, FSInputFile("killaura.rar"), 
-                               caption="✅ Оплата подтверждена! Ваш файл: КИЛЛАУРА")
-        await message.answer(f"✅ Киллаура отправлена пользователю {uid}")
+        # Формат: /give ID название_файла
+        args = message.text.split()
+        user_id = int(args[1])
+        file_alias = args[2].lower()
+        
+        # Маппинг файлов (имена должны совпадать с файлами в папке бота)
+        files = {
+            "киллаура": "killaura.rar",
+            "хитбоксы": "pop_visuals.rar",
+            "триггеры": "pops_visuals.rar",
+            "esp": "target_esp.rar",
+            "aim": "aim_assist.rar"
+        }
+        
+        filename = files.get(file_alias, "file.rar")
+        
+        from aiogram.types import FSInputFile
+        await bot.send_document(user_id, FSInputFile(filename), caption=f"✅ Оплата подтверждена! Ваш файл: {file_alias}")
+        await message.answer(f"✅ Файл {filename} отправлен пользователю {user_id}")
     except Exception as e:
-        await message.answer(f"Ошибка! Введите: /give_killaura ID\n{e}")
-
-# (Остальные команды give_hits, give_triggers и т.д. остаются без изменений ниже)
-@dp.message(Command("give_hits"))
-async def give_hits(message: types.Message):
-    if message.from_user.id != ADMIN_ID: return
-    try:
-        uid = int(message.text.split()[1])
-        await bot.send_document(uid, FSInputFile("pop_visuals.rar"), caption="✅ Оплата подтверждена! Ваш файл: ХИТБОКСЫ")
-        await message.answer(f"✅ Отправлено {uid}")
-    except:
-        await message.answer("Ошибка! /give_hits ID")
+        await message.answer(f"Ошибка выдачи! Проверь ID и наличие файла.\n{e}")
 
 @dp.message(Command("support"))
 async def cmd_support(message: types.Message):
