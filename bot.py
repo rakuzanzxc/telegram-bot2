@@ -36,7 +36,7 @@ def get_back_button():
 def get_payment_menu(item_name):
     buttons = [
         [InlineKeyboardButton(text="✅ Я ОПЛАТИЛ", callback_data=f"confirm_{item_name}")],
-        [InlineKeyboardButton(text="⬅️ 𝔹𝔸ℂ𝕂", callback_data="to_main")]
+        [InlineKeyboardButton(text="⬅️ ʙᴀᴄᴋ", callback_data="to_main")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -136,10 +136,10 @@ async def cmd_give(message: types.Message):
         # Маппинг файлов (имена должны совпадать с файлами в папке бота)
         files = {
             "киллаура": "killaura.rar",
-            "хитбоксы": "pop_visuals.rar",
-            "триггеры": "pops_visuals.rar",
-            "esp": "target_esp.rar",
-            "aim": "aim_assist.rar"
+            "хитбоксы": "hitbox.rar",
+            "триггеры": "trigger.rar",
+            "esp": "esp.rar",
+            "aim": "aim.rar"
         }
         
         filename = files.get(file_alias, "file.rar")
